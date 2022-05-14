@@ -1,29 +1,48 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import * as path from 'path'
-
+import {
+    createStyleImportPlugin,
+    ElementPlusResolve,
+} from 'vite-plugin-style-import'
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    //设置别名
-    alias: {
-      '@': path.resolve(__dirname, 'src')
-    }
-  },
-  // server: {
-  //   port: 6666, //启动端口
-  //   hmr: {
-  //     host: '127.0.0.1',
-  //     port: 6666
-  //   },
-  //   // 设置https代理
-  //   proxy: {
-  //     '/api': {
-  //       target: '192.168.1.5',
-  //       changeOrigin: true,
-  //       rewrite: (path: string) => path.replace(/^\/api/, '')
-  //     }
-  //   }
-  // }
+    plugins: [
+        vue(),
+        createStyleImportPlugin({
+            resolves: [ElementPlusResolve()],
+            libs: [
+                // 如果没有你需要的resolve，可以在lib内直接写
+                {
+                    libraryName: 'element-plus',
+                    esModule: true,
+                    resolveStyle: (name) => {
+                        return `element-plus/lib/theme-chalk/${name}.css`
+                    },
+                    ensureStyleFile: true, //忽略文件是否存在，导入不存在的CSS文件时防止错误
+                },
+            ],
+        }),
+    ],
+    resolve: {
+        // 设置别名
+        alias: {
+            '@': path.resolve(__dirname, 'src'),
+        },
+    },
+    server: {
+        port: 6622, //启动端口
+        hmr: {
+            host: '127.0.0.1',
+            port: 6622,
+        },
+        // 设置https代理
+        proxy: {
+            '/api': {
+                target: '127.0.0.1',
+                changeOrigin: true,
+                rewrite: (path: string) => path.replace(/^\/mock/, ''), //default: api
+            },
+        },
+    },
 })
